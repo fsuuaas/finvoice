@@ -331,15 +331,6 @@ class InvoicePrinter extends FPDF
             $this->SetFont($this->font, '', 9);
             $this->Cell(0, $lineheight, $this->reference, 0, 1, 'R');
         }
-        //Date
-        $this->Cell($positionX, $lineheight);
-        $this->SetFont($this->font, 'B', 9);
-        $this->SetTextColor($this->color[0], $this->color[1], $this->color[2]);
-        $this->Cell(32, $lineheight, iconv(self::ICONV_CHARSET_INPUT, self::ICONV_CHARSET_OUTPUT_A, mb_strtoupper($this->lang['date'], self::ICONV_CHARSET_INPUT)) . ':', 0, 0, 'L');
-        $this->SetTextColor(50, 50, 50);
-        $this->SetFont($this->font, '', 9);
-        $this->Cell(0, $lineheight, $this->date, 0, 1, 'R');
-
         //Time
         if (!empty($this->time)) {
             $this->Cell($positionX, $lineheight);
@@ -351,6 +342,16 @@ class InvoicePrinter extends FPDF
             $this->SetFont($this->font, '', 9);
             $this->Cell(0, $lineheight, $this->time, 0, 1, 'R');
         }
+        //Date
+        $this->Cell($positionX, $lineheight);
+        $this->SetFont($this->font, 'B', 9);
+        $this->SetTextColor($this->color[0], $this->color[1], $this->color[2]);
+        $this->Cell(32, $lineheight, iconv(self::ICONV_CHARSET_INPUT, self::ICONV_CHARSET_OUTPUT_A, mb_strtoupper($this->lang['date'], self::ICONV_CHARSET_INPUT)) . ':', 0, 0, 'L');
+        $this->SetTextColor(50, 50, 50);
+        $this->SetFont($this->font, '', 9);
+        $this->Cell(0, $lineheight, $this->date, 0, 1, 'R');
+
+
         //Due date
         if (!empty($this->due)) {
             $this->Cell($positionX, $lineheight);
