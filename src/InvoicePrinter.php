@@ -147,6 +147,27 @@ class InvoicePrinter extends FPDF
         return preg_replace('/\<br(\s*)?\/?\>/i', "\n", $string);
     }
 
+    private function writeFormattedParagraph(string $paragraph): void
+    {
+        $lines = explode("\n", $paragraph);
+        foreach ($lines as $i => $line) {
+            $parts = preg_split('/(<strong>|<\/strong>)/i', $line, -1, PREG_SPLIT_DELIM_CAPTURE);
+            foreach ($parts as $part) {
+                if (strcasecmp($part, '<strong>') === 0) {
+                    $this->SetFont($this->font, 'B', 8);
+                } elseif (strcasecmp($part, '</strong>') === 0) {
+                    $this->SetFont($this->font, '', 8);
+                } else {
+                    $this->Write(4, iconv(self::ICONV_CHARSET_INPUT, self::ICONV_CHARSET_OUTPUT_A, $part));
+                }
+            }
+            if ($i < count($lines) - 1) {
+                $this->Ln(4);
+            }
+        }
+        $this->Ln(4);
+    }
+
     public function isValidTimezoneId($zone)
     {
         try {
@@ -647,7 +668,7 @@ class InvoicePrinter extends FPDF
             if ($text[0] == 'paragraph') {
                 $this->SetTextColor(80, 80, 80);
                 $this->SetFont($this->font, '', 8);
-                $this->MultiCell(0, 4, iconv(self::ICONV_CHARSET_INPUT, self::ICONV_CHARSET_OUTPUT_A, $text[1]), 0, 'L', 0);
+                $this->writeFormattedParagraph($text[1]);
                 $this->Ln(4);
             }
         }
