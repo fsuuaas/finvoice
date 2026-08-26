@@ -164,6 +164,26 @@ class InvoicePrinter extends FPDF
         return preg_replace('/[^\x00-\x7F]/', '?', (string) $string);
     }
 
+    /**
+     * RGB for a given addBadge() string. 'unpaid'/'cancelled' keep their
+     * long-standing hardcoded red; 'draft'/'partial' get their own neutral
+     * gray / amber so they read as distinct at a glance instead of falling
+     * back to the invoice's own brand color. Anything else (including
+     * 'paid', or a caller's custom string) keeps the original fallback:
+     * whatever color/badgeColor the invoice itself was set to.
+     */
+    private function badgeColorFor($badge)
+    {
+        $known = [
+            'unpaid'    => [255, 2, 2],
+            'cancelled' => [255, 2, 2],
+            'draft'     => [108, 117, 125],
+            'partial'   => [230, 126, 34],
+        ];
+
+        return $known[$badge] ?? $this->badgeColor;
+    }
+
     private function br2nl($string)
     {
         return preg_replace('/\<br(\s*)?\/?\>/i', "\n", $string);
@@ -616,52 +636,15 @@ class InvoicePrinter extends FPDF
 
 
         //Badge
-        if ($this->badge == 'unpaid') {
+        if ($this->badge) {
+            $rgb    = $this->badgeColorFor($this->badge);
             $badge  = ' ' . mb_strtoupper($this->badge, self::ICONV_CHARSET_INPUT) . ' ';
             $resetX = $this->getX();
             $resetY = $this->getY();
             $this->setXY($badgeX, $badgeY + 15);
             $this->SetLineWidth(0.4);
-	    $this->SetDrawColor(255,2,2);
-	    $this->setTextColor(255,2,2);
-            $this->SetFont($this->font, 'b', 15);
-            $this->Rotate(10, $this->getX(), $this->getY());
-            $this->Rect($this->GetX(), $this->GetY(), $this->GetStringWidth($badge) + 2, 10);
-            $this->Write(10,  $this->toCharset(self::ICONV_CHARSET_OUTPUT_B,mb_strtoupper($badge, self::ICONV_CHARSET_INPUT)));
-            $this->Rotate(0);
-            if ($resetY > $this->getY() + 20) {
-                $this->setXY($resetX, $resetY);
-            } else {
-                $this->Ln(18);
-            }
-        }
-        elseif ($this->badge  == 'cancelled') {
-            $badge  = ' ' . mb_strtoupper($this->badge, self::ICONV_CHARSET_INPUT) . ' ';
-            $resetX = $this->getX();
-            $resetY = $this->getY();
-            $this->setXY($badgeX, $badgeY + 15);
-            $this->SetLineWidth(0.4);
-	    $this->SetDrawColor(255,2,2);
-	    $this->setTextColor(255,2,2);
-            $this->SetFont($this->font, 'b', 15);
-            $this->Rotate(10, $this->getX(), $this->getY());
-            $this->Rect($this->GetX(), $this->GetY(), $this->GetStringWidth($badge) + 2, 10);
-            $this->Write(10,  $this->toCharset(self::ICONV_CHARSET_OUTPUT_B,mb_strtoupper($badge, self::ICONV_CHARSET_INPUT)));
-            $this->Rotate(0);
-            if ($resetY > $this->getY() + 20) {
-                $this->setXY($resetX, $resetY);
-            } else {
-                $this->Ln(18);
-            }
-        }
-        else{
-            $badge  = ' ' . mb_strtoupper($this->badge, self::ICONV_CHARSET_INPUT) . ' ';
-            $resetX = $this->getX();
-            $resetY = $this->getY();
-            $this->setXY($badgeX, $badgeY + 15);
-            $this->SetLineWidth(0.4);
-            $this->SetDrawColor($this->badgeColor[0], $this->badgeColor[1], $this->badgeColor[2]);
-            $this->setTextColor($this->badgeColor[0], $this->badgeColor[1], $this->badgeColor[2]);
+            $this->SetDrawColor($rgb[0], $rgb[1], $rgb[2]);
+            $this->setTextColor($rgb[0], $rgb[1], $rgb[2]);
             $this->SetFont($this->font, 'b', 15);
             $this->Rotate(10, $this->getX(), $this->getY());
             $this->Rect($this->GetX(), $this->GetY(), $this->GetStringWidth($badge) + 2, 10);
