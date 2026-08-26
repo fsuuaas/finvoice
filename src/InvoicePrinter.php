@@ -227,12 +227,12 @@ class InvoicePrinter extends FPDF
 
     public function setFrom($data)
     {
-        $this->from = $data;
+        $this->from = is_array($data) ? array_values($data) : $data;
     }
 
     public function setTo($data)
     {
-        $this->to = $data;
+        $this->to = is_array($data) ? array_values($data) : $data;
     }
 
     public function setReference($reference)
